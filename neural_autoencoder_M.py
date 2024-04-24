@@ -247,7 +247,9 @@ label_encoder = LabelEncoder()
 train_labels_encoded = label_encoder.fit_transform(train_labels)
 test_labels_encoded = label_encoder.transform(test_labels)
 
-onehot_encoder = OneHotEncoder(sparse=False, categories="auto")
+# https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.OneHotEncoder.html
+# New in version 1.2: sparse was renamed to sparse_output
+onehot_encoder = OneHotEncoder(sparse_output=False, categories="auto")
 train_labels = onehot_encoder.fit_transform(train_labels_encoded.reshape(-1, 1))
 test_labels = onehot_encoder.transform(test_labels_encoded.reshape(-1, 1))
 
