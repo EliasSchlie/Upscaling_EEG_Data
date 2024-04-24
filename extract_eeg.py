@@ -55,8 +55,8 @@ train_trials_np = np.array(train_trials)
 train_labels_np = np.array(train_labels)
 
 # save the trials and labels to numpy files
-np.save("train_trials.npy", train_trials_np)
-np.save("train_labels.npy", train_labels_np)
+np.save("extracted/train_trials.npy", train_trials_np)
+np.save("extracted/train_labels.npy", train_labels_np)
 
 # Extract test data
 test_trials = []
@@ -95,5 +95,5 @@ test_trials_np = np.array(test_trials)
 test_labels_np = np.array(test_labels)
 
 # save the trials and labels to numpy files
-np.save("test_trials.npy", test_trials_np)
-np.save("test_labels.npy", test_labels_np)
+np.save("extracted/test_trials.npy", test_trials_np)
+np.save("extracted/test_labels.npy", test_labels_np)
