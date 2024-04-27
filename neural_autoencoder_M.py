@@ -12,6 +12,9 @@ train_labels = np.load("./extracted/train_labels.npy")
 test_data = np.load("./extracted/test_trials.npy")
 test_labels = np.load("./extracted/test_labels.npy")
 
+# Define the input shape
+input_shape = (2048, 16, 1)
+
 print("-----------------------------------------")
 print("initial shape of data")
 print("-----------------------------------------")
@@ -78,7 +81,7 @@ with strategy.scope():
 
     encoder = tf.keras.Sequential(
         [
-            tf.keras.layers.Input(shape=(2000, 16, 1)),
+            tf.keras.layers.Input(shape=(2048, 16, 1)),
             tf.keras.layers.Conv2D(
                 # number of filters or output channels for the convolutional layer.
                 # Each filter learns to detect different patterns or features in the input data.
@@ -153,7 +156,7 @@ with strategy.scope():
 
     print(encoder.summary())
     print(decoder.summary())
-    autoencoder = tf.keras.Model(inputs=encoder.inputs, outputs=decoder(encoder.output))
+    autoencoder = tf.keras.Model(inputs=input_shape, outputs=decoder(encoder.output))
     autoencoder.compile(
         optimizer=tf.keras.optimizers.Adam(learning_rate=0.001), loss="mse"
     )
@@ -254,7 +257,7 @@ train_labels = onehot_encoder.fit_transform(train_labels_encoded.reshape(-1, 1))
 test_labels = onehot_encoder.transform(test_labels_encoded.reshape(-1, 1))
 
 # Define the input shape
-input_shape = (2000, 16, 1)
+input_shape = (2048, 16)
 
 # Define the number of classes
 num_classes = 2
@@ -269,7 +272,7 @@ print("Number of devices: {}".format(strategy.num_replicas_in_sync))
 with strategy.scope():
     model_original = tf.keras.Sequential(
         [
-            tf.keras.layers.Input(shape=(2000, 16, 1)),
+            tf.keras.layers.Input(shape=(2048, 16)),
             tf.keras.layers.Conv2D(
                 256, [20, 1], activation="relu", padding="same", strides=[4, 1]
             ),
