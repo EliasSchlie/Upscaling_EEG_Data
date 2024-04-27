@@ -4,7 +4,7 @@ import tensorflow as tf
 from sklearn.preprocessing import MinMaxScaler, LabelEncoder, OneHotEncoder
 from sklearn.utils import shuffle
 import random
-import sklearn
+from sklearn.model_selection import train_test_split
 
 # Define the number of images to create and the image dimensions
 # Load your data as a NumPy array
@@ -169,7 +169,10 @@ sub_sampled_train_data = train_data[:, :, [0, 2, 3, 6, 9, 10, 14, 15]]
 sub_sampled_test_data = test_data[:, :, [0, 2, 3, 6, 9, 10, 14, 15]]
 
 # split traindata and subsampled train data into train and validation sets
-sub_sampled_train_data, train_data, sub_sampled_validation_data, validation_data = sklearn.model_selection.train_test_split(sub_sampled_train_data, train_data, test_size=0.2, random_state=42)
+sub_sampled_train_data, sub_sampled_validation_data, train_data, validation_data = train_test_split(sub_sampled_train_data, train_data, test_size=0.2, random_state=42)
+
+print(sub_sampled_train_data.shape)
+print(train_data.shape)
 
 # Train the autoencoder
 autoencoder.fit(
