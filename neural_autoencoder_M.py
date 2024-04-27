@@ -113,7 +113,7 @@ with strategy.scope():
             tf.keras.layers.BatchNormalization(),
             tf.keras.layers.Dropout(0.2),  # added dropout layer with rate 0.2
             tf.keras.layers.Conv2D(
-                32, [4, 2], activation="relu", padding="same", strides=[5, 2]
+                32, [4, 2], activation="relu", padding="same", strides=[4, 2]
             ),
             tf.keras.layers.BatchNormalization(),
             tf.keras.layers.Flatten(),
@@ -122,41 +122,40 @@ with strategy.scope():
         ]
     )
 
-    decoder = tf.keras.Sequential(
-        [
-            tf.keras.layers.Input(shape=(latent_dim,)),
-            tf.keras.layers.Dense(25 * 4 * 64, activation="relu"),
-            tf.keras.layers.Dropout(0.2),  # added dropout layer with rate 0.2
-            tf.keras.layers.Reshape((25, 4, 64)),
-            tf.keras.layers.Conv2DTranspose(
-                32, [4, 2], activation="relu", padding="same", strides=[5, 2]
-            ),
-            tf.keras.layers.BatchNormalization(),
-            tf.keras.layers.Dropout(0.2),  # added dropout layer with rate 0.2
-            tf.keras.layers.Conv2DTranspose(
-                64, [8, 2], activation="relu", padding="same", strides=[2, 2]
-            ),
-            tf.keras.layers.BatchNormalization(),
-            tf.keras.layers.Dropout(0.2),  # added dropout layer with rate 0.2
-            tf.keras.layers.Conv2DTranspose(
-                128, [10, 1], activation="relu", padding="same", strides=[2, 1]
-            ),
-            tf.keras.layers.BatchNormalization(),
-            tf.keras.layers.Dropout(0.2),  # added dropout layer with rate 0.2
-            tf.keras.layers.Conv2DTranspose(
-                256, [20, 1], activation="relu", padding="same", strides=[4, 1]
-            ),
-            tf.keras.layers.BatchNormalization(),
-            tf.keras.layers.Dropout(0.2),  # added dropout layer with rate 0.2
-            tf.keras.layers.Conv2DTranspose(
-                1, [20, 1], activation="sigmoid", padding="same"
-            ),
-        ]
-    )
+    decoder = tf.keras.Sequential([
+        tf.keras.layers.Input(shape=(latent_dim,)),
+        tf.keras.layers.Dense(32 * 4 * 32, activation="relu"),  # Matching the output of last encoder layer
+        tf.keras.layers.Dropout(0.2),
+        tf.keras.layers.Reshape((32, 4, 32)),
+        tf.keras.layers.Conv2DTranspose(
+            32, [4, 2], activation="relu", padding="same", strides=[4, 2]
+        ),
+        tf.keras.layers.BatchNormalization(),
+        tf.keras.layers.Dropout(0.2),
+        tf.keras.layers.Conv2DTranspose(
+            64, [8, 2], activation="relu", padding="same", strides=[2, 2]
+        ),
+        tf.keras.layers.BatchNormalization(),
+        tf.keras.layers.Dropout(0.2),
+        tf.keras.layers.Conv2DTranspose(
+            128, [10, 1], activation="relu", padding="same", strides=[2, 1]
+        ),
+        tf.keras.layers.BatchNormalization(),
+        tf.keras.layers.Dropout(0.2),
+        tf.keras.layers.Conv2DTranspose(
+            256, [20, 1], activation="relu", padding="same", strides=[4, 1]  # Changed to 'valid' to remove excess width
+        ),
+        tf.keras.layers.BatchNormalization(),
+        tf.keras.layers.Dropout(0.2),
+        tf.keras.layers.Conv2DTranspose(
+            1, [20, 1], activation="sigmoid", padding="same"
+        ),
+    ])
+
 
     print(encoder.summary())
     print(decoder.summary())
-    autoencoder = tf.keras.Model(inputs=input_shape, outputs=decoder(encoder.output))
+    autoencoder = tf.keras.Model(inputs=encoder.inputs, outputs=decoder(encoder.output))
     autoencoder.compile(
         optimizer=tf.keras.optimizers.Adam(learning_rate=0.001), loss="mse"
     )
