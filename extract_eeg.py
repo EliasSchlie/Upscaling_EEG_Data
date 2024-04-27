@@ -21,8 +21,6 @@ train_labels = []
 
 # loop through each EEG data file
 for eeg_file in eeg_files:
-    # get the subject ID
-    subject_id = eeg_file.split("_")[0]
 
     # load the EEG data for a specific subject and run
     eeg_data = scipy.io.loadmat(os.path.join("eeg_data", eeg_file))
@@ -129,3 +127,35 @@ print(test_labels_np.shape)
 # save the trials and labels to numpy files
 np.save("extracted/test_trials.npy", test_trials_np)
 np.save("extracted/test_labels.npy", test_labels_np)
+
+
+# MARK: Extract unstructured 8 second chunks of data for unsupervised data augmentation
+
+# get a list of all the EEG training data files in the eeg_data folder
+eeg_files = [
+    f for f in os.listdir("eeg_data") if f.startswith("P") and f.endswith("training.mat")
+]
+
+# Extract train data
+# create empty lists to hold all the data
+train_randomized = []
+
+# loop through each EEG data file
+for eeg_file in eeg_files:
+
+    # load the EEG data for a specific subject and run
+    eeg_data = scipy.io.loadmat(os.path.join("eeg_data", eeg_file))
+
+    eeg_data = pd.DataFrame(eeg_data["y"])
+
+    for i in range(0, len(eeg_data)- 2047, 2048):
+        train_randomized.append(eeg_data.iloc[i : i + 2048, :].values) 
+
+# convert the lists of trials and labels to numpy arrays
+train_randomized_np = np.array(train_randomized)
+
+print(train_randomized_np.shape)
+
+# save the trials and labels to numpy files
+np.save("extracted/train_randomized.npy", train_trials_np)
+
