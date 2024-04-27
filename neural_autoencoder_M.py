@@ -4,6 +4,7 @@ import tensorflow as tf
 from sklearn.preprocessing import MinMaxScaler, LabelEncoder, OneHotEncoder
 from sklearn.utils import shuffle
 import random
+import sklearn
 
 # Define the number of images to create and the image dimensions
 # Load your data as a NumPy array
@@ -12,8 +13,6 @@ train_labels = np.load("./extracted/train_labels.npy")
 test_data = np.load("./extracted/test_trials.npy")
 test_labels = np.load("./extracted/test_labels.npy")
 
-# Define the input shape
-input_shape = (2048, 16, 1)
 
 print("-----------------------------------------")
 print("initial shape of data")
@@ -169,13 +168,16 @@ train_data, test_data, train_labels, test_labels = preprocessing(
 sub_sampled_train_data = train_data[:, :, [0, 2, 3, 6, 9, 10, 14, 15]]
 sub_sampled_test_data = test_data[:, :, [0, 2, 3, 6, 9, 10, 14, 15]]
 
+# split traindata and subsampled train data into train and validation sets
+sub_sampled_train_data, train_data, sub_sampled_validation_data, validation_data = sklearn.model_selection.train_test_split(sub_sampled_train_data, train_data, test_size=0.2, random_state=42)
+
 # Train the autoencoder
 autoencoder.fit(
     x=sub_sampled_train_data,
     y=train_data,
-    epochs=3,
+    epochs=1000,
     batch_size=128,
-    validation_data=(np.asarray(test_data), np.asarray(test_data)),
+    validation_data=(np.asarray(sub_sampled_validation_data), np.asarray(validation_data)),
     callbacks=[
         tf.keras.callbacks.EarlyStopping(
             monitor="val_loss", patience=60, restore_best_weights=True
@@ -200,10 +202,11 @@ print(test_data.shape)
 print(test_labels.shape)
 
 n_images = 10
-original_images = random.sample(list(test_data), n_images)
-original_images = np.array(original_images)
+image_indeces = random.sample(range(len(test_data)), n_images)
+original_images = test_data[image_indeces]
+reconstructed_images = autoencoder.predict(sub_sampled_test_data[image_indeces])
 print(original_images.shape)
-reconstructed_images = autoencoder.predict(original_images)
+
 
 # Create a figure object with adjusted wspace
 fig = plt.figure(figsize=(n_images * 8, 16))
