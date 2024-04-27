@@ -1,0 +1,6 @@
+# ignore vscode chace and settings
+.vscode/
+
+# ignore data folders
+eeg_data/
+extracted/

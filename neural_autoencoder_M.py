@@ -7,10 +7,10 @@ import random
 
 # Define the number of images to create and the image dimensions
 # Load your data as a NumPy array
-train_data = np.load("/home/u956278/hackathon/M_data/extracted/train_trials.npy")
-train_labels = np.load("/home/u956278/hackathon/M_data/extracted/train_labels.npy")
-test_data = np.load("/home/u956278/hackathon/M_data/extracted/test_trials.npy")
-test_labels = np.load("/home/u956278/hackathon/M_data/extracted/test_labels.npy")
+train_data = np.load("./extracted/train_trials.npy")
+train_labels = np.load("./extracted/train_labels.npy")
+test_data = np.load("./extracted/test_trials.npy")
+test_labels = np.load("./extracted/test_labels.npy")
 
 print("-----------------------------------------")
 print("initial shape of data")
