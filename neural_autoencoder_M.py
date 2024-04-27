@@ -81,7 +81,7 @@ with strategy.scope():
 
     encoder = tf.keras.Sequential(
         [
-            tf.keras.layers.Input(shape=(2048, 16, 1)),
+            tf.keras.layers.Input(shape=(2048, 8, 1)),
             tf.keras.layers.Conv2D(
                 # number of filters or output channels for the convolutional layer.
                 # Each filter learns to detect different patterns or features in the input data.
@@ -165,11 +165,15 @@ train_data, test_data, train_labels, test_labels = preprocessing(
     train_data, test_data, train_labels, test_labels
 )
 
+# Sample the eeg channels number 1, 3, 4, 7, 10, 11, 15, 16
+sub_sampled_train_data = train_data[:, :, [0, 2, 3, 6, 9, 10, 14, 15]]
+sub_sampled_test_data = test_data[:, :, [0, 2, 3, 6, 9, 10, 14, 15]]
+
 # Train the autoencoder
 autoencoder.fit(
-    x=train_data,
+    x=sub_sampled_train_data,
     y=train_data,
-    epochs=500,
+    epochs=3,
     batch_size=128,
     validation_data=(np.asarray(test_data), np.asarray(test_data)),
     callbacks=[
@@ -179,6 +183,9 @@ autoencoder.fit(
     ],
     verbose=2,
 )
+
+# Save the autoencoder model
+autoencoder.save("autoencoder_M.h5")
 
 # Generate the latent space
 # latent_space = encoder.predict(np.asarray(train_data))
@@ -195,7 +202,7 @@ print(test_labels.shape)
 n_images = 10
 original_images = random.sample(list(test_data), n_images)
 original_images = np.array(original_images)
-print("diocane", original_images.shape)
+print(original_images.shape)
 reconstructed_images = autoencoder.predict(original_images)
 
 # Create a figure object with adjusted wspace
