@@ -6,6 +6,8 @@ from sklearn.utils import shuffle
 import random
 from sklearn.model_selection import train_test_split
 
+train_autoencoder = False
+
 # Define the number of images to create and the image dimensions
 # Load your data as a NumPy array
 train_data = np.load("./extracted/train_trials.npy")
@@ -186,6 +188,8 @@ sub_sampled_train_data, sub_sampled_validation_data, train_data, validation_data
 
 print(sub_sampled_train_data.shape)
 print(train_data.shape)
+print(sub_sampled_validation_data.shape)
+print(validation_data.shape)
 
 # # Constants
 # total_channels = 16  # Total channels (0 to 15)
@@ -228,24 +232,31 @@ print(train_data.shape)
 # # Print shape of the subsampled train data
 # print(final_train_data.shape)
 
-autoencoder.fit(
-    x=sub_sampled_train_data,
-    y=train_data,
-    epochs=1000,
-    batch_size=128,
-    validation_data=(sub_sampled_validation_data, validation_data),
-    callbacks=[
-        tf.keras.callbacks.EarlyStopping(monitor="val_loss", patience=60, restore_best_weights=True)
-    ],
-    verbose=2,
-)
+if train_autoencoder:
+    autoencoder.fit(
+        x=sub_sampled_train_data,
+        y=train_data,
+        epochs=1000,
+        batch_size=128,
+        validation_data=(sub_sampled_validation_data, validation_data),
+        callbacks=[
+            tf.keras.callbacks.EarlyStopping(monitor="val_loss", patience=60, restore_best_weights=True)
+        ],
+        verbose=2,
+    )
 
-
-# Save the autoencoder model
-autoencoder.save("autoencoder_M.h5")
+    # Save the autoencoder model
+    autoencoder.save("autoencoder_M.h5")
+else:
+    # Load the autoencoder model
+    autoencoder = tf.keras.models.load_model("autoencoder_M.h5")
 
 # Generate the latent space
 # latent_space = encoder.predict(np.asarray(train_data))
+
+# Calculate loss on the test data
+loss = autoencoder.evaluate(sub_sampled_test_data, test_data)
+print("Test loss:", loss)
 
 
 print("-----------------------------------------")
