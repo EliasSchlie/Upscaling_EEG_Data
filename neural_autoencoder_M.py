@@ -181,7 +181,19 @@ train_data, test_data, train_labels, test_labels = preprocessing(
 
 # Sample the eeg channels number 1, 3, 4, 7, 10, 11, 15, 16
 sub_sampled_train_data = train_data[:, :, [0, 2, 3, 6, 9, 10, 14, 15]]
-sub_sampled_test_data = test_data[:, :, [0, 2, 3, 6, 9, 10, 14, 15]]
+
+# Number of channels in the full dataset
+total_channels = test_data.shape[2]  # Update this if necessary
+
+# Channels that you want to keep
+channels_to_keep = [0, 2, 3, 6, 9, 10, 14, 15]
+
+# Create an array filled with zeros
+sub_sampled_test_data_with_zeros = np.zeros(test_data.shape[:2] + (total_channels,))
+
+# Fill in the data for the selected channels
+for idx, channel in enumerate(channels_to_keep):
+    sub_sampled_test_data_with_zeros[:, :, channel] = test_data[:, :, idx]
 
 # split traindata and subsampled train data into train and validation sets
 sub_sampled_train_data, sub_sampled_validation_data, train_data, validation_data = train_test_split(sub_sampled_train_data, train_data, test_size=0.1, random_state=42)
@@ -287,8 +299,9 @@ else:
 # Generate the latent space
 # latent_space = encoder.predict(np.asarray(train_data))
 
+
 # Calculate loss on the test data
-loss = autoencoder.evaluate(sub_sampled_test_data, test_data)
+loss = autoencoder.evaluate(sub_sampled_test_data_with_zeros, test_data)
 print("Test loss:", loss)
 
 
