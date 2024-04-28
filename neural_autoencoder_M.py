@@ -6,7 +6,7 @@ from sklearn.utils import shuffle
 import random
 from sklearn.model_selection import train_test_split
 
-train_autoencoder = False
+train_autoencoder = True
 
 # Define the number of images to create and the image dimensions
 # Load your data as a NumPy array
@@ -95,7 +95,7 @@ with strategy.scope():
 
     encoder = tf.keras.Sequential(
         [
-            tf.keras.layers.Input(shape=(2048, 8, 1)),
+            tf.keras.layers.Input(shape=(2048, 16, 1)),
             tf.keras.layers.Conv2D(
                 # number of filters or output channels for the convolutional layer.
                 # Each filter learns to detect different patterns or features in the input data.
@@ -372,7 +372,7 @@ print("Number of devices: {}".format(strategy.num_replicas_in_sync))
 with strategy.scope():
     model_original = tf.keras.Sequential(
         [
-            tf.keras.layers.Input(shape=(2048, 8)),
+            tf.keras.layers.Input(shape=(2048, 16)),
             tf.keras.layers.Conv2D(
                 256, [20, 1], activation="relu", padding="same", strides=[4, 1]
             ),
