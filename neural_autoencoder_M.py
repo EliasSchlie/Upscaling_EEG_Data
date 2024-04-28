@@ -6,7 +6,7 @@ from sklearn.utils import shuffle
 import random
 from sklearn.model_selection import train_test_split
 
-train_autoencoder = True
+train_autoencoder = False
 
 # Define the number of images to create and the image dimensions
 # Load your data as a NumPy array
@@ -300,40 +300,60 @@ print(train_labels.shape)
 print(test_data.shape)
 print(test_labels.shape)
 
-n_images = 10
-image_indeces = random.sample(range(len(test_data)), n_images)
-original_images = test_data[image_indeces]
-reconstructed_images = autoencoder.predict(sub_sampled_test_data[image_indeces])
-print(original_images.shape)
+def modified_subsample(data):
+    # Create a new array of zeros with the same shape as the original
+    modified_data = np.zeros_like(data)
+    # List of channels to keep (1-based to 0-based index: subtract 1)
+    channels_to_keep = np.array([1, 3, 4, 7, 10, 11, 15, 16]) - 1
+    # Copy the subsampled data into the corresponding channels of the new array
+    modified_data[:, :, channels_to_keep] = data[:, :, channels_to_keep]
+    return modified_data
 
+# Apply this to your test data
+modified_sub_sampled_test_data = modified_subsample(test_data)
 
-# Create a figure object with adjusted wspace
-fig = plt.figure(figsize=(n_images * 8, 16))
+n_images = 4
+image_indices = random.sample(range(len(test_data)), n_images)
+original_images = test_data[image_indices]
+reconstructed_images = autoencoder.predict(modified_sub_sampled_test_data[image_indices])
+subsampled_images = modified_sub_sampled_test_data[image_indices]
+
+# Create a figure object with adjusted spacing
+fig = plt.figure(figsize=(n_images * 8, 24))
 fig.subplots_adjust(wspace=2, hspace=0.5)
 
 # Loop through the images
 for i in range(n_images):
     # Original image
-    ax = fig.add_subplot(2, n_images, i + 1)
+    ax = fig.add_subplot(3, n_images, i + 1)
     ax.pcolormesh(original_images[i], cmap="hot")
     ax.axis("on")
     ax.set_xticks(range(0, original_images[i].shape[1], 5))
     ax.set_xticklabels(range(0, original_images[i].shape[1], 5))
+    ax.set_title("Original")
+
+    # Subsampled image
+    ax = fig.add_subplot(3, n_images, n_images + i + 1)
+    ax.pcolormesh(subsampled_images[i], cmap="hot")
+    ax.axis("on")
+    ax.set_xticks(range(0, subsampled_images[i].shape[1], 5))
+    ax.set_xticklabels(range(0, subsampled_images[i].shape[1], 5))
+    ax.set_title("Subsampled")
 
     # Reconstructed image
-    ax = fig.add_subplot(2, n_images, n_images + i + 1)
+    ax = fig.add_subplot(3, n_images, 2 * n_images + i + 1)
     ax.pcolormesh(reconstructed_images[i][:, :, 0], cmap="hot")
     ax.axis("on")
     ax.set_xticks(range(0, reconstructed_images[i].shape[1], 5))
     ax.set_xticklabels(range(0, reconstructed_images[i].shape[1], 5))
+    ax.set_title("Reconstructed")
 
 # Set the title
-fig.suptitle("Original vs Reconstructed Images")
+fig.suptitle("Original vs Subsampled vs Reconstructed Images")
 
 # Save the plot as a PNG image file
-fig.savefig("original_vs_reconstructed.png")
+fig.savefig("original_vs_subsampled_vs_reconstructed.png")
 
-plt.close()
 
 reconstructed_train = autoencoder.predict(train_data)
 np.save("processed_data/R_train_dataset_M.npy", reconstructed_train)
