@@ -93,7 +93,7 @@ with strategy.scope():
 
     encoder = tf.keras.Sequential(
         [
-            tf.keras.layers.Input(shape=(2048, 16, 1)),
+            tf.keras.layers.Input(shape=(2048, 8, 1)),
             tf.keras.layers.Conv2D(
                 # number of filters or output channels for the convolutional layer.
                 # Each filter learns to detect different patterns or features in the input data.
@@ -187,53 +187,53 @@ sub_sampled_train_data, sub_sampled_validation_data, train_data, validation_data
 print(sub_sampled_train_data.shape)
 print(train_data.shape)
 
-# Constants
-total_channels = 16  # Total channels (0 to 15)
-num_channels_to_sample = 8  # Number of channels to sample
-num_iterations = 10  # Number of times to sample and expand the dataset
-split_index = int(len(train_random) * 0.9)
+# # Constants
+# total_channels = 16  # Total channels (0 to 15)
+# num_channels_to_sample = 8  # Number of channels to sample
+# num_iterations = 10  # Number of times to sample and expand the dataset
+# split_index = int(len(train_random) * 0.9)
 
-# Prepare lists to hold expanded datasets
-expanded_train_data = []
-expanded_train_full = []  # Corresponding full data for training
-expanded_validation_data = []
-expanded_validation_full = []  # Corresponding full data for validation
+# # Prepare lists to hold expanded datasets
+# expanded_train_data = []
+# expanded_train_full = []  # Corresponding full data for training
+# expanded_validation_data = []
+# expanded_validation_full = []  # Corresponding full data for validation
 
-# Perform the sampling and data modification 10 times
-for _ in range(num_iterations):
-    # Generate a list of random channel indices
-    random_indices = random.sample(range(total_channels), num_channels_to_sample)
+# # Perform the sampling and data modification 10 times
+# for _ in range(num_iterations):
+#     # Generate a list of random channel indices
+#     random_indices = random.sample(range(total_channels), num_channels_to_sample)
     
-    # Create zeroed copies of the dataset for this iteration
-    iter_train_zeros = np.zeros_like(train_random[:split_index])
-    iter_validation_zeros = np.zeros_like(train_random[split_index:])
+#     # Create zeroed copies of the dataset for this iteration
+#     iter_train_zeros = np.zeros_like(train_random[:split_index])
+#     iter_validation_zeros = np.zeros_like(train_random[split_index:])
     
-    # Copy the data from the sampled channels into the zeroed arrays
-    iter_train_zeros[:, :, random_indices] = train_random[:split_index, :, random_indices]
-    iter_validation_zeros[:, :, random_indices] = train_random[split_index:, :, random_indices]
+#     # Copy the data from the sampled channels into the zeroed arrays
+#     iter_train_zeros[:, :, random_indices] = train_random[:split_index, :, random_indices]
+#     iter_validation_zeros[:, :, random_indices] = train_random[split_index:, :, random_indices]
     
-    # Append to the list of datasets
-    expanded_train_data.append(iter_train_zeros)
-    expanded_validation_data.append(iter_validation_zeros)
-    # Append the corresponding full data batches
-    expanded_train_full.append(train_random[:split_index])
-    expanded_validation_full.append(train_random[split_index:])
+#     # Append to the list of datasets
+#     expanded_train_data.append(iter_train_zeros)
+#     expanded_validation_data.append(iter_validation_zeros)
+#     # Append the corresponding full data batches
+#     expanded_train_full.append(train_random[:split_index])
+#     expanded_validation_full.append(train_random[split_index:])
 
-# Concatenate all iterations to form the final datasets
-final_train_data = np.concatenate(expanded_train_data, axis=0)
-final_validation_data = np.concatenate(expanded_validation_data, axis=0)
-final_train_full = np.concatenate(expanded_train_full, axis=0)
-final_validation_full = np.concatenate(expanded_validation_full, axis=0)
+# # Concatenate all iterations to form the final datasets
+# final_train_data = np.concatenate(expanded_train_data, axis=0)
+# final_validation_data = np.concatenate(expanded_validation_data, axis=0)
+# final_train_full = np.concatenate(expanded_train_full, axis=0)
+# final_validation_full = np.concatenate(expanded_validation_full, axis=0)
 
-# Print shape of the subsampled train data
-print(final_train_data.shape)
+# # Print shape of the subsampled train data
+# print(final_train_data.shape)
 
 autoencoder.fit(
-    x=final_train_data,
-    y=final_train_full,
+    x=sub_sampled_train_data,
+    y=train_data,
     epochs=1000,
     batch_size=128,
-    validation_data=(final_validation_data, final_validation_full),
+    validation_data=(sub_sampled_validation_data, validation_data),
     callbacks=[
         tf.keras.callbacks.EarlyStopping(monitor="val_loss", patience=60, restore_best_weights=True)
     ],
@@ -321,7 +321,7 @@ train_labels = onehot_encoder.fit_transform(train_labels_encoded.reshape(-1, 1))
 test_labels = onehot_encoder.transform(test_labels_encoded.reshape(-1, 1))
 
 # Define the input shape
-input_shape = (2048, 16)
+input_shape = (2048, 8)
 
 # Define the number of classes
 num_classes = 2
@@ -336,7 +336,7 @@ print("Number of devices: {}".format(strategy.num_replicas_in_sync))
 with strategy.scope():
     model_original = tf.keras.Sequential(
         [
-            tf.keras.layers.Input(shape=(2048, 16)),
+            tf.keras.layers.Input(shape=(2048, 8)),
             tf.keras.layers.Conv2D(
                 256, [20, 1], activation="relu", padding="same", strides=[4, 1]
             ),
