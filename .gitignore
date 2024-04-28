@@ -4,3 +4,11 @@
 # ignore data folders
 # eeg_data/
 extracted/
+extracted_images/
+
+autoencoder_M.h5
+
+*Zone.Identifier
+*.png
+
+P1_post_training.mat

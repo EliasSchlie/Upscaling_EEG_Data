@@ -2,6 +2,8 @@ import os
 import pandas as pd
 import numpy as np
 import scipy.io
+import os
+import matplotlib.pyplot as plt
 
 # Check if extracted folder exists or create it
 if not os.path.exists('extracted'):
@@ -19,11 +21,17 @@ eeg_files = [
 train_trials = []
 train_labels = []
 
+# Directory where the images will be saved
+save_dir = "extracted_images"
+os.makedirs(save_dir, exist_ok=True)
+
 # loop through each EEG data file
 for eeg_file in eeg_files:
 
     # load the EEG data for a specific subject and run
     eeg_data = scipy.io.loadmat(os.path.join("eeg_data", eeg_file))
+    sub_dir = os.path.join(save_dir, eeg_file.split("_")[0])
+    os.makedirs(sub_dir, exist_ok=True)
 
     targets = eeg_data["trig"]
     eeg_data = pd.DataFrame(eeg_data["y"])
@@ -55,6 +63,18 @@ for eeg_file in eeg_files:
 
         train_trials.append(trial_data)
         train_labels.append(label)
+
+        # fig, ax = plt.subplots(figsize=(8, 16))  # Adjust figure size as needed
+        # cax = ax.pcolormesh(trial_data, cmap="hot")  # Use a colormap that suits your data
+        # ax.axis("on")  # Turn on axis if needed, or 'off' to turn them off
+        # ax.set_xticks(range(0, trial_data.shape[1], 5))
+        # ax.set_xticklabels(range(0, trial_data.shape[1], 5))
+
+        # # Save each figure using the trial index to ensure unique filenames
+        # fig.savefig(os.path.join(sub_dir, f"trial_{trial}.png"))
+        # plt.close(fig)  # Close the figure after saving to free up memory
+
+
 
 # convert the lists of trials and labels to numpy arrays
 train_trials_np = np.array(train_trials)

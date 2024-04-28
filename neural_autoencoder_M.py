@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
-from sklearn.preprocessing import MinMaxScaler, LabelEncoder, OneHotEncoder
+from sklearn.preprocessing import MinMaxScaler, LabelEncoder, OneHotEncoder, StandardScaler
 from sklearn.utils import shuffle
 import random
 from sklearn.model_selection import train_test_split
@@ -54,8 +54,8 @@ def preprocessing(train_data, test_data, train_labels, test_labels, train_random
     train_labels_onehot = onehot_encoder.fit_transform(train_labels_encoded.reshape(-1, 1))
     test_labels_onehot = onehot_encoder.transform(test_labels_encoded.reshape(-1, 1))
     """
-    # Create an instance of MinMaxScaler with a range of 0 to 1
-    scaler = MinMaxScaler(feature_range=(0, 1))
+    # Create a standardization scaler
+    scaler = StandardScaler()
 
     # Reshape the train and test data to 2D arrays with shape (num_samples, num_pixels)
     num_samples_train = train_data.shape[0]
@@ -186,6 +186,39 @@ sub_sampled_test_data = test_data[:, :, [0, 2, 3, 6, 9, 10, 14, 15]]
 # split traindata and subsampled train data into train and validation sets
 sub_sampled_train_data, sub_sampled_validation_data, train_data, validation_data = train_test_split(sub_sampled_train_data, train_data, test_size=0.2, random_state=42)
 
+# save a sample of the subsampled train data and the corresponding full data in a plt image
+n_images = 5
+image_indeces = random.sample(range(len(sub_sampled_train_data)), n_images)
+original_images = train_data[image_indeces]
+sampled_images = sub_sampled_train_data[image_indeces]
+
+# Create a figure object with adjusted wspace
+fig = plt.figure(figsize=(n_images * 8, 16))
+fig.subplots_adjust(wspace=2, hspace=0.5)
+
+# Loop through the images
+for i in range(n_images):
+    # Original image
+    ax = fig.add_subplot(2, n_images, i + 1)
+    ax.pcolormesh(original_images[i], cmap="hot")
+    ax.axis("on")
+    ax.set_xticks(range(0, original_images[i].shape[1], 5))
+    ax.set_xticklabels(range(0, original_images[i].shape[1], 5))
+
+    # Sampled image
+    ax = fig.add_subplot(2, n_images, n_images + i + 1)
+    ax.pcolormesh(sampled_images[i], cmap="hot")
+    ax.axis("on")
+    ax.set_xticks(range(0, sampled_images[i].shape[1], 5))
+    ax.set_xticklabels(range(0, sampled_images[i].shape[1], 5))
+
+# Set the title
+fig.suptitle("Original vs Sampled Images")
+
+# Save the plot as a PNG image file
+fig.savefig("original_vs_sampled.png")
+
+
 print(sub_sampled_train_data.shape)
 print(train_data.shape)
 print(sub_sampled_validation_data.shape)
@@ -301,14 +334,6 @@ fig.suptitle("Original vs Reconstructed Images")
 fig.savefig("original_vs_reconstructed.png")
 
 plt.close()
-
-
-# save the recostructed dataset
-latent_space_train = encoder.predict(train_data)
-np.save("processed_data/LS_train_dataset_M.npy", latent_space_train)
-
-latent_space_test = encoder.predict(test_data)
-np.save("processed_data/LS_test_dataset_M.npy", latent_space_test)
 
 reconstructed_train = autoencoder.predict(train_data)
 np.save("processed_data/R_train_dataset_M.npy", reconstructed_train)
