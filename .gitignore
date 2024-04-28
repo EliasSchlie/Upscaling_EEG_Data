@@ -2,5 +2,5 @@
 .vscode/
 
 # ignore data folders
-eeg_data/
+# eeg_data/
 extracted/
