@@ -332,7 +332,7 @@ train_labels = onehot_encoder.fit_transform(train_labels_encoded.reshape(-1, 1))
 test_labels = onehot_encoder.transform(test_labels_encoded.reshape(-1, 1))
 
 # Define the input shape
-input_shape = (2048, 8)
+input_shape = (2048, 16)
 
 # Define the number of classes
 num_classes = 2
@@ -397,10 +397,9 @@ history_original = model_original.fit(
     validation_data=(test_data, test_labels),
     batch_size=128,
     verbose=2,
+    callbacks=[tf.keras.callbacks.EarlyStopping(monitor="val_loss", patience=50, restore_best_weights=True)],
 )
-#                      callbacks=[tf.keras.callbacks.EarlyStopping(monitor='val_loss',
-#                                                                  patience=150,
-#                                                                  restore_best_weights=True)])
+
 model_original_history = history_original.history
 
 # Reset the model states
