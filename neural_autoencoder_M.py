@@ -14,7 +14,7 @@ train_data = np.load("./extracted/train_trials.npy")
 train_labels = np.load("./extracted/train_labels.npy")
 test_data = np.load("./extracted/test_trials.npy")
 test_labels = np.load("./extracted/test_labels.npy")
-train_random = np.load("./extracted/train_randomized.npy")
+# train_random = np.load("./extracted/train_randomized.npy")
 
 
 print("-----------------------------------------")
@@ -24,10 +24,10 @@ print(train_data.shape)
 print(train_labels.shape)
 print(test_data.shape)
 print(test_labels.shape)
-print(train_random.shape)
+# print(train_random.shape)
 
 
-def preprocessing(train_data, test_data, train_labels, test_labels, train_random):
+def preprocessing(train_data, test_data, train_labels, test_labels):
     # Shuffle the train data and labels
     # train_data = np.transpose(train_data, (0, 2, 1))
     train_data = train_data[:, :, :]
@@ -39,9 +39,9 @@ def preprocessing(train_data, test_data, train_labels, test_labels, train_random
     print(test_data.shape)
     test_data, test_labels = shuffle(test_data, test_labels, random_state=0)
     # Shuffle the train_random data
-    # train_random = np.transpose(train_random, (0, 2, 1))
-    train_random = train_random[:, :, :]
-    train_random = shuffle(train_random, random_state=0)
+    # # train_random = np.transpose(train_random, (0, 2, 1))
+    # train_random = train_random[:, :, :]
+    # train_random = shuffle(train_random, random_state=0)
 
     train_labels = np.where(train_labels == -1, 0, train_labels)
     test_labels = np.where(test_labels == -1, 0, test_labels)
@@ -66,21 +66,21 @@ def preprocessing(train_data, test_data, train_labels, test_labels, train_random
     num_pixels_test = test_data.shape[1] * test_data.shape[2]
     test_data_2d = test_data.reshape(num_samples_test, num_pixels_test)
 
-    num_samples_train_random = train_random.shape[0]
-    num_pixels_train_random = train_random.shape[1] * train_random.shape[2]
-    train_random_2d = train_random.reshape(num_samples_train_random, num_pixels_train_random)
+    # num_samples_train_random = train_random.shape[0]
+    # num_pixels_train_random = train_random.shape[1] * train_random.shape[2]
+    # train_random_2d = train_random.reshape(num_samples_train_random, num_pixels_train_random)
 
     # Scale the train and test data using MinMaxScaler
     train_data_scaled_2d = scaler.fit_transform(train_data_2d)
     test_data_scaled_2d = scaler.transform(test_data_2d)
-    train_random_scaled_2d = scaler.transform(train_random_2d)
+    # train_random_scaled_2d = scaler.transform(train_random_2d)
 
     # Reshape the scaled train and test data back to the original shape
     train_data = train_data_scaled_2d.reshape(train_data.shape)
     test_data = test_data_scaled_2d.reshape(test_data.shape)
-    train_random = train_random_scaled_2d.reshape(train_random.shape)
+    # train_random = train_random_scaled_2d.reshape(train_random.shape)
 
-    return train_data, test_data, train_labels, test_labels, train_random
+    return train_data, test_data, train_labels, test_labels
 
 
 # Define the autoencoder model
@@ -175,8 +175,8 @@ with strategy.scope():
     )
 
 # data preprocessing
-train_data, test_data, train_labels, test_labels, train_random = preprocessing(
-    train_data, test_data, train_labels, test_labels, train_random
+train_data, test_data, train_labels, test_labels = preprocessing(
+    train_data, test_data, train_labels, test_labels
 )
 
 # Sample the eeg channels number 1, 3, 4, 7, 10, 11, 15, 16
@@ -184,7 +184,7 @@ sub_sampled_train_data = train_data[:, :, [0, 2, 3, 6, 9, 10, 14, 15]]
 sub_sampled_test_data = test_data[:, :, [0, 2, 3, 6, 9, 10, 14, 15]]
 
 # split traindata and subsampled train data into train and validation sets
-sub_sampled_train_data, sub_sampled_validation_data, train_data, validation_data = train_test_split(sub_sampled_train_data, train_data, test_size=0.2, random_state=42)
+sub_sampled_train_data, sub_sampled_validation_data, train_data, validation_data = train_test_split(sub_sampled_train_data, train_data, test_size=0.1, random_state=42)
 
 # save a sample of the subsampled train data and the corresponding full data in a plt image
 n_images = 5
@@ -224,54 +224,54 @@ print(train_data.shape)
 print(sub_sampled_validation_data.shape)
 print(validation_data.shape)
 
-# # Constants
-# total_channels = 16  # Total channels (0 to 15)
-# num_channels_to_sample = 8  # Number of channels to sample
-# num_iterations = 10  # Number of times to sample and expand the dataset
-# split_index = int(len(train_random) * 0.9)
+# Constants
+total_channels = 16  # Total channels (0 to 15)
+num_channels_to_sample = 8  # Number of channels to sample
+num_iterations = 15  # Number of times to sample and expand the dataset
+split_index = int(len(train_data) * 0.9)
 
-# # Prepare lists to hold expanded datasets
-# expanded_train_data = []
-# expanded_train_full = []  # Corresponding full data for training
-# expanded_validation_data = []
-# expanded_validation_full = []  # Corresponding full data for validation
+# Prepare lists to hold expanded datasets
+expanded_train_data = []
+expanded_train_full = []  # Corresponding full data for training
+expanded_validation_data = []
+expanded_validation_full = []  # Corresponding full data for validation
 
-# # Perform the sampling and data modification 10 times
-# for _ in range(num_iterations):
-#     # Generate a list of random channel indices
-#     random_indices = random.sample(range(total_channels), num_channels_to_sample)
+# Perform the sampling and data modification 10 times
+for _ in range(num_iterations):
+    # Generate a list of random channel indices
+    random_indices = random.sample(range(total_channels), num_channels_to_sample)
     
-#     # Create zeroed copies of the dataset for this iteration
-#     iter_train_zeros = np.zeros_like(train_random[:split_index])
-#     iter_validation_zeros = np.zeros_like(train_random[split_index:])
+    # Create zeroed copies of the dataset for this iteration
+    iter_train_zeros = np.zeros_like(train_data[:split_index])
+    iter_validation_zeros = np.zeros_like(train_data[split_index:])
     
-#     # Copy the data from the sampled channels into the zeroed arrays
-#     iter_train_zeros[:, :, random_indices] = train_random[:split_index, :, random_indices]
-#     iter_validation_zeros[:, :, random_indices] = train_random[split_index:, :, random_indices]
+    # Copy the data from the sampled channels into the zeroed arrays
+    iter_train_zeros[:, :, random_indices] = train_data[:split_index, :, random_indices]
+    iter_validation_zeros[:, :, random_indices] = train_data[split_index:, :, random_indices]
     
-#     # Append to the list of datasets
-#     expanded_train_data.append(iter_train_zeros)
-#     expanded_validation_data.append(iter_validation_zeros)
-#     # Append the corresponding full data batches
-#     expanded_train_full.append(train_random[:split_index])
-#     expanded_validation_full.append(train_random[split_index:])
+    # Append to the list of datasets
+    expanded_train_data.append(iter_train_zeros)
+    expanded_validation_data.append(iter_validation_zeros)
+    # Append the corresponding full data batches
+    expanded_train_full.append(train_data[:split_index])
+    expanded_validation_full.append(train_data[split_index:])
 
-# # Concatenate all iterations to form the final datasets
-# final_train_data = np.concatenate(expanded_train_data, axis=0)
-# final_validation_data = np.concatenate(expanded_validation_data, axis=0)
-# final_train_full = np.concatenate(expanded_train_full, axis=0)
-# final_validation_full = np.concatenate(expanded_validation_full, axis=0)
+# Concatenate all iterations to form the final datasets
+final_train_data = np.concatenate(expanded_train_data, axis=0)
+final_validation_data = np.concatenate(expanded_validation_data, axis=0)
+final_train_full = np.concatenate(expanded_train_full, axis=0)
+final_validation_full = np.concatenate(expanded_validation_full, axis=0)
 
-# # Print shape of the subsampled train data
-# print(final_train_data.shape)
+# Print shape of the subsampled train data
+print(final_train_data.shape)
 
 if train_autoencoder:
     autoencoder.fit(
-        x=sub_sampled_train_data,
-        y=train_data,
+        x=final_train_data,
+        y=final_train_full,
         epochs=1000,
         batch_size=128,
-        validation_data=(sub_sampled_validation_data, validation_data),
+        validation_data=(final_validation_data, final_validation_full),
         callbacks=[
             tf.keras.callbacks.EarlyStopping(monitor="val_loss", patience=60, restore_best_weights=True)
         ],

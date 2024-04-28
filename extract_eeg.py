@@ -179,3 +179,18 @@ print(train_randomized_np.shape)
 # save the trials and labels to numpy files
 np.save("extracted/train_randomized.npy", train_trials_np)
 
+# # Save images of the trials
+# save_dir = "extracted_images/randomized"
+# os.makedirs(save_dir, exist_ok=True)
+
+# for i in range(train_randomized_np.shape[0]):
+#     fig, ax = plt.subplots(figsize=(8, 16))  # Adjust figure size as needed
+#     cax = ax.pcolormesh(train_randomized_np[i], cmap="hot")  # Use a colormap that suits your data
+#     ax.axis("on")  # Turn on axis if needed, or 'off' to turn them off
+#     ax.set_xticks(range(0, train_randomized_np[i].shape[1], 5))
+#     ax.set_xticklabels(range(0, train_randomized_np[i].shape[1], 5))
+
+#     # Save each figure using the trial index to ensure unique filenames
+#     fig.savefig(os.path.join(save_dir, f"trial_{i}.png"))
+#     plt.close(fig)  # Close the figure after saving to free up memory
+
